@@ -88,12 +88,15 @@
 			return towns.calc_lim(3);
 		}
 		local nbcarg=towns._featCargo.len(); // receiving nbcarg cargos.
+		local final_count = max(1, GSController.GetSetting("FinalCargoUnlockTownCount"));
+		local count_step = max(0, GSController.GetSetting("CargoUnlockTownCountStep"));
 		for(local i=0;i<n;i++)
 		{
 			local cargo=def_m.extCargo[n-i-1].cargo;
 			local lim=towns.calc_lim(i);
 
-			local nbtoreach=min(max(n-i,1),4);
+			local cargos_after = n - i - 1;
+			local nbtoreach = final_count + cargos_after * count_step;
 			towns._goals[i+1] <- GSGoal.New(GSCompany.COMPANY_INVALID, GSText(GSText.STR_GOAL_GROW,nbtoreach,lim,1<<cargo), GSGoal.GT_NONE, 0);
 			towns._limites[i+1] <- lim;
 			towns._toreach[i+1] <- nbtoreach;
@@ -112,7 +115,9 @@
 		local nbcarg = towns._featCargo.len(); // receiving nbcarg cargos.
 		local diff = GSController.GetSetting("Difficulty_level")>5 ? 1 : 0;     // 6:hard   7:very hard
 		diff += GSController.GetSetting("Difficulty_level")>1 ? 1 : 0;          // 2: easy +...
-		return towns.calc_lim(nbcarg + next + diff);
+		local base_goal = towns.calc_lim(nbcarg + next + diff);
+		local percent = max(10, GSController.GetSetting("WinTownSizePercent"));
+		return (base_goal * percent / 100).tointeger();
 	}
 
 	/**
@@ -225,6 +230,7 @@
 			impact+=imp;
 		}
 		towns._traces <- "";
+		pgc_m.UpdateLockedUniqueCargo(town); // count unique cargo even when locked by City Controller
 		if(impact>1)
 		{
 			debug+=" impact:"+impact;
@@ -263,6 +269,16 @@
 
 		impact=impact.tointeger();
 		if(towns._diffRate!=1) debug+="  * Difficulty_Rate("+towns._diffRate+"%)";
+
+		local pgc_bonus = pgc_m.GetBonusPercent(town);
+		if(pgc_bonus>0)
+		{
+			local before_pgc = impact;
+			impact = pgc_m.ApplyBonus(town, impact);
+			debug += "  * PGC(+"+pgc_bonus+"%):"+before_pgc+"=>"+impact;
+		}
+		local pgcMsg = pgc_m.GetSummaryText(town);
+		if(GSController.GetSetting("PGC_ShowInTownWindow") == 1) bonus2Msg = pgcMsg;
 
 		if(impact>0)
 			towns._traces <- debug + "  final target ===> "+impact;
@@ -393,6 +409,7 @@ function MakeTownGrowth(town,impact)
 		{
 			amount +=  max(0,GSCargoMonitor.GetTownDeliveryAmount(company_id, cargo, town, true));
 		}
+		pgc_m.AddDelivery(town, cargo, amount, true);
 
 		// compute and shift history
 		if(!(cargo in towns._prevQty[town]))
@@ -586,8 +603,8 @@ function MakeTownGrowth(town,impact)
 	{
 		trace(3,"New Town "+id);
 		towns.InitiateCargoHist_FoundedTown(id) // empty all cargo history
+		pgc_m.EnsureTown(id);
 		stab_m.newTown(id);
 	}
 
 };
-
