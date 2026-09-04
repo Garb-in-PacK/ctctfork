@@ -82,6 +82,7 @@ STR_NOBONUS     :{RAW_STRING}
 STR_TOWN        :{TOWN}
 STR_EMPTY       :
 STR_PERFECTBONUS : {WHITE} Full throttle bonus! {BLACK}
+STR_PGC_SUMMARY :{LTBLUE}Permanent Growth Credit: +{NUM}%{}Unique cargo: {RAW_STRING}, level {NUM}, progress {NUM}/{NUM}
 
 STR_UP : ↗
 STR_DOWN : ↘
