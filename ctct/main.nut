@@ -31,6 +31,7 @@ require("industry.nut"); // les industries
 require("companies.nut"); // les companies
 require("stabilizer.nut"); // les companies
 require("leaguetable.nut"); // la league table
+require("permanent_growth.nut"); // Permanent Growth Credit extension
 
 towns_m <- towns; // le gestionaire des villes...
 def_m <- Def; // les definitions
@@ -39,6 +40,7 @@ comp_m <- companies; // les companies
 stab_m <- stabilizer; // le stabilisateur
 cs_mgr <- CargoSet_Manager;
 ltable_m <- leaguetable; // gestionaire de league
+pgc_m <- permanent_growth; // permanent growth credit manager
 
 class MainClass extends GSController 
 {
@@ -121,6 +123,7 @@ function MainClass::InitStep2(newgame)
 	trace(4,"MainClass::InitStep2(newgame:" + newgame + ")");
 	if(newgame) stab_m.NewGame(); // enregistrement des maisons
 	
+	pgc_m.Start(newgame);
 	towns_m.Start(newgame); // lecture des vecteurs et 1er tour de calcul town
 	indus_m.Init();
 	
@@ -155,10 +158,12 @@ function MainClass::Init()
 		comp_m.compete_goal <-this._loaded_data["competegoal"];
 		stab_m._houses <- this._loaded_data["stab"];
 		ltable_m.tables <- this._loaded_data["tables"];
+		pgc_m._data <- this._loaded_data.rawin("pgc") ? this._loaded_data["pgc"] : {};
 	} else 
 	{	// appelle de la partie init (qui fait l'objet de la sauvegarde par ailleurs)
 		towns_m.NewGame();
 		ltable_m.init();
+		pgc_m._data <- {};
 	}
 	this._init_done = true; 	// Indicate that all data structures has been initialized/restored.
 	this._loaded_data = null; 	// the loaded data has no more use now after that _init_done is true.
@@ -212,6 +217,7 @@ function MainClass::HandleEvents()
 				local town=GSEventTownFounded.Convert(ev).GetTownID();
 				trace(2,year+" A new town is founded "+ GSTown.GetName(town)+" pop:"+GSTown.GetPopulation(town));
 				towns_m.newTown(town);
+				pgc_m.EnsureTown(town);
 				break;
 			case GSEvent.ET_EXCLUSIVE_TRANSPORT_RIGHTS:
 				this.CheckInteraction();
@@ -293,8 +299,9 @@ function MainClass::Save()
 		companies = comp_m.comp,     /* Companies */
 		towngoal = comp_m.goalval,   /* Company target for the owned town */
 		competegoal = comp_m.compete_goal, /* GSGoal id for the global Goal */
-		stab = stab_m._houses        /* Number of house, for the stabilizer */
-		tables = ltable_m.tables	 /* LeagueTables*/
+		stab = stab_m._houses,       /* Number of house, for the stabilizer */
+		tables = ltable_m.tables,    /* LeagueTables */
+		pgc = pgc_m._data            /* Permanent Growth Credit data */
 	};
 }
 
