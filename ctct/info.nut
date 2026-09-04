@@ -21,15 +21,15 @@
 require("version.nut");
 
 class FMainClass extends GSInfo {
-	function GetAuthor()		{ return "hpfx"; }
-	function GetName()			{ return "City Controller"; }
-	function GetDescription() 	{ return "Take control on how cities are growing - deliver specific cargos to make them grow, unlock cargos - two game mode : Co-Op or competitive"; }
+	function GetAuthor()		{ return "hpfx, Garb-in-PacK"; }
+	function GetName()			{ return "City Controller PGC"; }
+	function GetDescription() 	{ return "City Controller with Permanent Growth Credit: deliver cargos to towns to unlock permanent target-population bonuses and unique town cargo specializations."; }
 	function GetVersion()		{ return SELF_VERSION; }
-	function GetDate()			{ return "2026-02-01"; }
+	function GetDate()			{ return "2026-09-04"; }
 	function CreateInstance()	{ return "MainClass"; }
-	function GetShortName()		{ return "CTCT"; }
+	function GetShortName()		{ return "CTPG"; }
 	function GetAPIVersion()	{ return "13"; }
-	function GetURL()			{ return "https://www.tt-forums.net/viewtopic.php?t=70224"; }
+	function GetURL()			{ return "https://github.com/Garb-in-PacK/ctctfork"; }
 
 	function GetSettings() 
 	{
@@ -41,7 +41,7 @@ class FMainClass extends GSInfo {
 			hard_value = 2,
 			custom_value = 2,
 			flags = CONFIG_NONE, min_value = 1, max_value = 2});
-		AddLabels("Game_Type", {_1 = "Every towns are free, Collaborative Town growing", // "Co-op"
+		AddLabels("Game_Type", {_1 = "Every towns are free, Collaborative Town growing",
 			                    _2 = "Competition, Claimed Cities (set your HQ to claim)"
 		} );
 
@@ -111,6 +111,53 @@ class FMainClass extends GSInfo {
 										 _4 = "Add a sign with the company name below the city",
 			                             _5 = "Do nothing"
 										 } );
+
+		AddSetting({
+			name = "PGC_Enable",
+			description = "PGC: Permanent Growth Credit system",
+			easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1,
+			flags = CONFIG_NONE | CONFIG_BOOLEAN});
+
+		AddSetting({name = "PGC_InitialLimit",
+			description = "PGC: initial delivery limit per cargo level",
+			easy_value = 100, medium_value = 100, hard_value = 100, custom_value = 100,
+			flags = CONFIG_NONE, min_value = 1, max_value = 100000});
+
+		AddSetting({name = "PGC_LimitIncrease",
+			description = "PGC: limit increase after each cargo level",
+			easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1,
+			flags = CONFIG_NONE, min_value = 0, max_value = 100000});
+
+		AddSetting({name = "PGC_NormalBonusPercent",
+			description = "PGC: target population bonus percent per normal cargo level",
+			easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1,
+			flags = CONFIG_NONE, min_value = 0, max_value = 100});
+
+		AddSetting({name = "PGC_UniqueBonusPercent",
+			description = "PGC: target population bonus percent per unique cargo level",
+			easy_value = 5, medium_value = 5, hard_value = 5, custom_value = 5,
+			flags = CONFIG_NONE, min_value = 0, max_value = 500});
+
+		AddSetting({
+			name = "PGC_ShowInTownWindow",
+			description = "PGC: show permanent growth info in town window",
+			easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1,
+			flags = CONFIG_INGAME | CONFIG_BOOLEAN});
+
+		AddSetting({name = "WinTownSizePercent",
+			description = "Victory: final town size multiplier percent",
+			easy_value = 100, medium_value = 100, hard_value = 100, custom_value = 100,
+			flags = CONFIG_NONE, min_value = 10, max_value = 1000});
+
+		AddSetting({name = "FinalCargoUnlockTownCount",
+			description = "Unlock: towns required for the last cargo unlock",
+			easy_value = 1, medium_value = 1, hard_value = 2, custom_value = 1,
+			flags = CONFIG_NONE, min_value = 1, max_value = 64});
+
+		AddSetting({name = "CargoUnlockTownCountStep",
+			description = "Unlock: additional towns required for each earlier cargo",
+			easy_value = 1, medium_value = 1, hard_value = 1, custom_value = 1,
+			flags = CONFIG_NONE, min_value = 0, max_value = 64});
 	}
 }
 
